@@ -26,6 +26,20 @@ import { createIconSetFromIcoMoon } from 'react-native-vector-icons';
 import IcoMoonConfig from './src/selection.json';
 const Icon = createIconSetFromIcoMoon(IcoMoonConfig);
 
+coinAvailable = {
+ tenBath:5,
+ fiveBath:10,
+ twoBath:3,
+ oneBath:10
+}
+
+coindrop = {
+  tenBath:0,
+  fiveBath:0,
+  twoBath:0,
+  oneBath:0
+ }
+
 export default class App extends Component {
 
   constructor(props) {
@@ -34,12 +48,14 @@ export default class App extends Component {
                    isLoading: true,
                    wallet: 0.00,
                    showAlert: false,
+                   showAlertError: false,
                    changes: 0,
                    itemName: '',
                    coin10bath: 0,
                    coin5bath: 0,
                    coin2bath: 0,
-                   coin1bath: 0
+                   coin1bath: 0,
+                   saleFail: false
                 }
     
   } 
@@ -73,6 +89,18 @@ export default class App extends Component {
     });
   }
 
+  showAlertError = () => {
+    this.setState({
+      showAlertError: true
+    });
+  }
+  
+  hideAlertError = () => {
+    this.setState({
+      showAlertError: false
+    });
+  }
+
   dismissScaleAnimationDialog = () => {
     this.popupDialog.dismiss();
   }
@@ -83,28 +111,42 @@ export default class App extends Component {
     var coin2 = 0;
     var coin1 = 0;
     while ( change > 0){
-      if(change >= 10){
+      if(change >= 10 && coin10 < coinAvailable.tenBath){
         coin10++;
         change= change-10;
-      }
-      if(change >= 5){
+        }
+      else if(change >= 5 && coin5 < coinAvailable.fiveBath){
         coin5++;
         change= change-5;
       }
-      if(change >= 2){
+      else if(change >= 2 && coin2 < coinAvailable.twoBath){
         coin2++;
         change = change-2;
-      } if(change === 1) {
+      } 
+      else if(change >= 1 && coin1 < coinAvailable.oneBath) {
         coin1++;
         change--;
+    }else{
+      this.setState({
+        saleFail: true
+        })
+        break;
     }
   }
+
+  if(!this.state.saleFail){
+  coinAvailable.tenBath = coinAvailable.tenBath - coin10;
+  coinAvailable.fiveBath = coinAvailable.fiveBath - coin5;
+  coinAvailable.twoBath = coinAvailable.twoBath - coin2;
+  coinAvailable.oneBath = coinAvailable.oneBath - coin1;
+
   this.setState({
     coin10bath: coin10,
     coin5bath: coin5,
     coin2bath: coin2,
     coin1bath: coin1
-  })
+    })
+  }
 }
 
   renderItem(item){
@@ -154,7 +196,16 @@ export default class App extends Component {
           if(changes > 0){
             this.calculateChangeCoins(this.state.changes);
           }
+
+          if (this.state.saleFail){
+            this.showAlertError();
+          }else{
+            coinAvailable.tenBath = coinAvailable.tenBath + coindrop.tenBath;
+            coinAvailable.fiveBath = coinAvailable.fiveBath + coindrop.fiveBath;
+            coinAvailable.twoBath = coinAvailable.twoBath + coindrop.twoBath;
+            coinAvailable.oneBath = coinAvailable.oneBath + coindrop.oneBath;
             this.showAlert();
+          }
           }, 700)}
           type="anchor"
           >
@@ -176,7 +227,7 @@ export default class App extends Component {
   }
 
   render() {
-    const {showAlert, itemName, changes ,coin10bath, coin5bath, coin2bath, coin1bath} = this.state;
+    const {showAlert, showAlertError, itemName, changes ,coin10bath, coin5bath, coin2bath, coin1bath} = this.state;
     if(this.state.isLoading){
       return(
         <View style={styles.ActivityIndicatorLoading}>
@@ -223,6 +274,12 @@ export default class App extends Component {
             >
             Add Coin
           </AwesomeButton> 
+
+          <Text>current coin</Text>
+          <Text>10: {coinAvailable.tenBath}</Text>
+          <Text>5: {coinAvailable.fiveBath}</Text>
+          <Text>2: {coinAvailable.twoBath}</Text>
+          <Text>1: {coinAvailable.oneBath}</Text>
           </View>
           <GridView
               itemDimension={SCREEN_WIDTH * 0.43}
@@ -249,11 +306,44 @@ export default class App extends Component {
           contentContainerStyle = {{width:300}}
           onConfirmPressed={() => {
             this.hideAlert();
+            coindrop.tenBath = 0;
+            coindrop.fiveBath = 0;
+            coindrop.twoBath = 0;
+            coindrop.oneBath = 0;
             this.setState({
             coin10bath: 0,
             coin5bath: 0,
             coin2bath: 0,
             coin1bath: 0
+        })
+          }}
+        />
+        <AwesomeAlert
+          show={showAlertError}
+          showProgress={false}
+          title="Error"
+          message="Don't have coin enough for changes"
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="OK"
+          confirmButtonColor="#05c46b"
+          messageStyle = {styles.messageawesomeAlert}
+          titleStyle = {styles.titleawesomeAlert}
+          confirmButtonTextStyle = {styles.confirmAwesomeButtonAlert}
+          contentContainerStyle = {{width:300}}
+          onConfirmPressed={() => {
+            this.hideAlertError();
+            coindrop.tenBath = 0;
+            coindrop.fiveBath = 0;
+            coindrop.twoBath = 0;
+            coindrop.oneBath = 0;
+            this.setState({
+            coin10bath: 0,
+            coin5bath: 0,
+            coin2bath: 0,
+            coin1bath: 0,
+            saleFail: false
         })
           }}
         />
@@ -273,6 +363,7 @@ export default class App extends Component {
                 this.setState({
                 wallet: this.state.wallet +10
               })
+              coindrop.tenBath++;
             }}
             >
             10 Bath
@@ -286,6 +377,7 @@ export default class App extends Component {
                 this.setState({
                 wallet: this.state.wallet +5
               })
+              coindrop.fiveBath++;
             }}
             >
             5 Bath
@@ -299,6 +391,7 @@ export default class App extends Component {
                 this.setState({
                 wallet: this.state.wallet +2
               })
+              coindrop.twoBath++;
             }}
             >
             2 Bath
@@ -312,6 +405,7 @@ export default class App extends Component {
                 this.setState({
                 wallet: this.state.wallet +1
               })
+              coindrop.oneBath++;
             }}
             >
             1 Bath
