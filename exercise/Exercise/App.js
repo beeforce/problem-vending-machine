@@ -12,7 +12,7 @@ import {
   View,
   Image,
   Animated,
-  SafeAreaView,
+  // SafeAreaView,
   Dimensions,
   ScrollView,
   ActivityIndicator,
@@ -237,23 +237,23 @@ export default class App extends Component {
     }
 
     if (Platform.OS === 'ios'){
-      return (
-        <SafeAreaView>
-        <ScrollView
-            scrollEventThrottle={16}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: this.scrollY } } }]
-                  )}>
-          <GridView
-              itemDimension={SCREEN_WIDTH * 0.43}
-              items={this.state.dataSource}
-              style={styles.gridView}
-              spacing = {0}
-              renderItem={item => (this.renderItem(item))}
-              />
-          </ScrollView>
-        </SafeAreaView>
-      );
+      // return (
+      //   <SafeAreaView>
+      //   <ScrollView
+      //       scrollEventThrottle={16}
+      //       onScroll={Animated.event(
+      //         [{ nativeEvent: { contentOffset: { y: this.scrollY } } }]
+      //             )}>
+      //     <GridView
+      //         itemDimension={SCREEN_WIDTH * 0.43}
+      //         items={this.state.dataSource}
+      //         style={styles.gridView}
+      //         spacing = {0}
+      //         renderItem={item => (this.renderItem(item))}
+      //         />
+      //     </ScrollView>
+      //   </SafeAreaView>
+      // );
     }else{
       return (
         <View style={styles.container}>
@@ -275,7 +275,7 @@ export default class App extends Component {
             Add Coin
           </AwesomeButton> 
 
-          <Text>current coin</Text>
+          <Text>Remain coin</Text>
           <Text>10: {coinAvailable.tenBath}</Text>
           <Text>5: {coinAvailable.fiveBath}</Text>
           <Text>2: {coinAvailable.twoBath}</Text>
